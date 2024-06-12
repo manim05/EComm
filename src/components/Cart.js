@@ -1,51 +1,4 @@
-// const Cart = () => {
-//     // console.log(localStorage.getItem('cart'))
 
-//     const cartItems = JSON.parse(localStorage.getItem('cart')) || []
-//     const totalValue = cartItems.reduce((total, item) => {
-//         return total + (item.product.price * item.quantity);
-//     }, 0);
-
-//     const truncateTitle = (title, maxLength) => title.length > maxLength ? title.slice(0, maxLength - 3) + '...' : title;
-
-
-//     // console.log(cartItems)
-//     return (
-//         <div style={styles.cartContainer}>
-//             <h2>Cart</h2>
-//             {cartItems.map(item => (
-//                 <div key={item.productId} style={styles.cartItem}>
-//                     <span>{truncateTitle(item.product.title,15)}</span>
-//                     <span>{item.product.price}</span>
-//                     <span>Quantity: {item.quantity}</span>
-//                     {/* <button onClick={() => removeFromCart(item.productId)}>Remove</button> */}
-//                 </div>
-//             ))}
-//               <div>Total: ${totalValue}</div> 
-//         </div>
-//     );
-// };
-
-// const styles = {
-//     cartContainer: {
-//         marginTop: '20px',
-//         padding: '20px',
-//         border: '1px solid #ddd',
-//         borderRadius: '5px',
-//     },
-//     cartItem: {
-//         display: 'flex',
-//         justifyContent: 'space-between',
-//         alignItems: 'center',
-//         marginBottom: '10px',
-//     },
-// };
-
-// export default Cart;
-
-
-
-// Cart.js
 import React from 'react';
 
 
@@ -59,7 +12,7 @@ const ProductCart = ({ product, quantity }) => {
             <div style={styles.productCartTitle}>{title}</div>
             <div style={styles.productCartDescription}>{description}</div>
             <div style={styles.productCartRating}>Rating: {rating.rate} <br /> ({rating.count} reviews)</div>
-            <div style={styles.productCartPrice}>${price.toFixed(2)}</div>
+            <div style={styles.productCartPrice}>${price}</div>
             <div style={styles.productCartQuantity}>Quantity: {quantity} <br/> Total Price: {totalPrice}</div>
         </div>
     );
@@ -84,7 +37,7 @@ const Cart = ({  }) => {
                     {cartItems.map((item, index) => (
                         <ProductCart key={index} product={item.product} quantity={item.quantity} />
                     ))}
-                    <div style={styles.cartTotal}><br/><br/>Total Amount: ${totalAmount.toFixed(2)} <br/><br/>
+                    <div style={styles.cartTotal}><br/><br/>Total Amount: ${totalAmount} <br/><br/>
                     <button style={styles.checkoutButton}> Checkout</button>
                     </div>
                 </>
