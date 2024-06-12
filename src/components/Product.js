@@ -1,76 +1,19 @@
-// import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 
-// const Product = ({ product, addToCart, removeFromCart }) => {
-//     const [selectedCount, setSelectedCount] = useState(0);
-
-//     const handleAddToCart = () => {
-//         setSelectedCount(1);
-//         addToCart(product.id);
-//     };
-
-//     const handleIncrement = () => {
-//         setSelectedCount(selectedCount + 1);
-//         addToCart(product.id);
-//     };
-
-//     const handleDecrement = () => {
-//         if (selectedCount === 1) {
-//             setSelectedCount(0);
-//             removeFromCart(product.id);
-//         } else {
-//             setSelectedCount(selectedCount - 1 );
-//             removeFromCart(product.id);
-//         }
-//     };
-
-    
-
-//     return (
-//         <div style={styles.productBox}>
-//             <img src={product.image} alt={product.title} style={styles.image} />
-//             <h3 style={styles.title}>{product.title}</h3>
-//             <p style={styles.description}>{product.description}</p>
-//             <p>Price: ${product.price}</p>
-
-//             {selectedCount === 0 ? (
-//                 <button onClick={handleAddToCart} style={styles.cartButton}>Add to Cart</button>
-//             ) : (
-//                 <div>
-//                     <button style={styles.operatorButton} onClick={handleDecrement}>-</button>
-//                     <span>{selectedCount}</span> <span></span>
-//                     <button style={styles.operatorButton} onClick={handleIncrement}>+</button>
-//                 </div>
-//             )}
-//         </div>
-//     );
-// };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import React, { useState } from 'react';
-
-const Product = ({ product, updateCart }) => {
+const Product = ({ product, updateCart,cartReset  }) => {
     const [selectedCount, setSelectedCount] = useState(0);
+
+    useEffect(() => {
+        const savedCart = localStorage.getItem('cart');
+        if (savedCart) {
+            const cartItems = JSON.parse(savedCart);
+            const cartItem = cartItems.find(item => item.productId === product.id);
+            if (cartItem) {
+                setSelectedCount(cartItem.quantity);
+            }
+        }
+    }, [product.id]);
 
     const handleAddToCart = () => {
         setSelectedCount(1);
@@ -83,14 +26,16 @@ const Product = ({ product, updateCart }) => {
     };
 
     const handleDecrement = () => {
-        if (selectedCount === 1) {
-            setSelectedCount(0);
-            updateCart(product.id, 'remove');
-        } else {
-            setSelectedCount(selectedCount - 1);
-            updateCart(product.id, 'remove');
-        }
+        const newCount = selectedCount === 1 ? 0 : selectedCount - 1;
+        setSelectedCount(newCount);
+        updateCart(product.id, 'remove');
     };
+
+    useEffect(() => {
+        if (cartReset) {
+            setSelectedCount(0);
+        }
+    }, [cartReset]);
 
     return (
         <div style={styles.productBox}>
@@ -111,7 +56,6 @@ const Product = ({ product, updateCart }) => {
         </div>
     );
 };
-
 
 const styles = {
     productBox: {
@@ -178,22 +122,5 @@ const styles = {
     }
 };
 
+
 export default Product;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -21,8 +21,6 @@ function App() {
 
   ]
 
-
-
   return (
     <Router>
     <div className="App">
@@ -32,11 +30,6 @@ function App() {
          {routePaths.map((route, index) => (
               <Route key={index} path={route.routePath} element={route.component} />
             ))}
-
-        {/* {routePaths.map(({ routePath, component }, index) => (
-            <Route key={index} path={routePath} element={component} />
-        ))} */}
-
         </Routes>
       </div>
     </div>

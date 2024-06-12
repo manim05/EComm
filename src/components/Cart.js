@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { calculateTotalAmount } from '../utils/cartUtils';
 
 
 const ProductCart = ({ product, quantity }) => {
@@ -13,19 +14,19 @@ const ProductCart = ({ product, quantity }) => {
             <div style={styles.productCartDescription}>{description}</div>
             <div style={styles.productCartRating}>Rating: {rating.rate} <br /> ({rating.count} reviews)</div>
             <div style={styles.productCartPrice}>${price}</div>
-            <div style={styles.productCartQuantity}>Quantity: {quantity} <br/> Total Price: {totalPrice}</div>
+            <div style={styles.productCartQuantity}> Quantity: {quantity} <br/> Total Price: {totalPrice}</div>
         </div>
     );
 };
 
 
 
-const Cart = ({  }) => {
+const Cart = () => {
 
 
     const cartItems = JSON.parse(localStorage.getItem('cart')) || []
 
-    const totalAmount = cartItems.reduce((total, item) => total + item.product.price * item.quantity, 0);
+    const totalAmount = calculateTotalAmount(cartItems);
 
     return (
         <div style={styles.cart}>
@@ -37,7 +38,7 @@ const Cart = ({  }) => {
                     {cartItems.map((item, index) => (
                         <ProductCart key={index} product={item.product} quantity={item.quantity} />
                     ))}
-                    <div style={styles.cartTotal}><br/><br/>Total Amount: ${totalAmount} <br/><br/>
+                    <div style={styles.cartTotal}><br/><br/>Total Amount: ${totalAmount.toFixed(2)} <br/><br/>
                     <button style={styles.checkoutButton}> Checkout</button>
                     </div>
                 </>

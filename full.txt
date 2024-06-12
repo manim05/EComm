@@ -291,3 +291,839 @@ export default Product;
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import React from 'react';
+import './App.css';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+
+
+import Homepage from './components/Homepage';
+import Cart from './components/Cart';
+
+
+function App() {
+
+  const routePaths = [
+    {
+      routePath: "/",
+      component: <Homepage/>
+    },
+    {
+      routePath: "/cart",
+      component: <Cart />
+    },
+
+  ]
+
+  return (
+    <Router>
+    <div className="App">
+      <div>
+        <h1>E Commerce Website</h1>
+        <Routes>
+         {routePaths.map((route, index) => (
+              <Route key={index} path={route.routePath} element={route.component} />
+            ))}
+        </Routes>
+      </div>
+    </div>
+  </Router>
+  );
+}
+
+export default App;
+
+
+
+
+
+import React, { useEffect, useState,useMemo } from 'react';
+import Product from './Product';
+import Menu from './Menu';
+import Cart from './Cart';
+
+
+const Homepage = () => {
+    const [products, setProducts] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [sortOption, setSortOption] = useState('');
+    
+    const [cartItems, setCartItems] = useState(() => {
+        const savedCart = localStorage.getItem('cart');
+        return savedCart ? JSON.parse(savedCart) : [];
+    });
+
+
+
+    const sortByPriceAscending = (products) =>  products.sort((a, b) => a.price - b.price); 
+    const sortByPriceDescending = (products) =>  products.sort((a, b) => b.price - a.price);
+   
+
+    const filteredProducts = useMemo(() => {
+        const filtered = products.filter(product =>
+            product.title.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+
+        if (sortOption === 'asc') {
+            return sortByPriceAscending(filtered);
+        } else if (sortOption === 'desc') {
+            return sortByPriceDescending(filtered);
+        } else {
+            return filtered;
+        }
+    }, [products, searchTerm, sortOption]);
+
+
+
+
+
+
+    const updateCart = (productId, action) => {
+        const existingItemIndex = cartItems.findIndex(item => item.productId === productId);
+        let updatedCartItems = [...cartItems];
+    
+        if (existingItemIndex !== -1) {
+            const existingItem = updatedCartItems[existingItemIndex];
+    
+            if (action === 'add') {
+                updatedCartItems[existingItemIndex].quantity++;
+            } else if (action === 'remove') {
+                if (existingItem.quantity > 1) {
+                    updatedCartItems[existingItemIndex].quantity--;
+                } else {
+                    updatedCartItems = updatedCartItems.filter(item => item.productId !== productId);
+                }
+            }
+        } else if (action === 'add') {
+            const productToAdd = products.find(product => product.id === productId);
+            updatedCartItems.push({ productId: productId, product: productToAdd, quantity: 1 });
+        }
+    
+        setCartItems(updatedCartItems);
+        localStorage.setItem('cart', JSON.stringify(updatedCartItems));
+    };
+    
+    
+  
+    useEffect(() => {
+        fetch('https://fakestoreapi.com/products/')
+            .then(res => res.json())
+            .then(json => {
+                console.log(json); 
+                setProducts(json); 
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+    }, []); 
+
+    return (
+        <div>
+
+            <Menu 
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                sortOption={sortOption}
+                setSortOption={setSortOption}
+                cartItems={cartItems}    
+            />
+            
+
+            <div style={styles.gridContainer}>
+                {filteredProducts.map(product => (
+                    <Product key={product.id} product={product} updateCart={updateCart} />
+                ))}
+            </div>
+
+           
+            {/* <Cart /> */}
+
+        </div>
+    );
+};
+
+
+
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+const Menu = ({ searchTerm, setSearchTerm, sortOption, setSortOption }) => {
+
+    const navigate = useNavigate();
+   
+    return (
+        <div style={styles.menuContainer}>
+            <input
+                type="text"
+                placeholder="Type here to search..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={styles.searchInput}
+            />
+            <select
+                value={sortOption}
+                onChange={(e) => setSortOption(e.target.value)}
+                style={styles.sortSelect}>
+
+                <option value="">Sort by Price</option>
+                <option value="asc">Ascending</option>
+                <option value="desc">Descending</option>
+            </select>
+
+            <button style={styles.cartButton} onClick={() =>navigate('/cart')}> Cart </button>
+        </div>
+    );
+};
+
+const styles = {
+    menuContainer: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: '10px',
+        borderBottom: '1px solid #ddd',
+        marginBottom: '20px'
+    },
+    searchInput: {
+        marginLeft: '50px',
+        padding: '10px',
+        fontSize: '16px',
+        width : '50%',
+        marginRight: '50px'
+    },
+    sortSelect: {
+        marginRight: '50px',
+        padding: '10px',
+        width : '25%',
+        fontSize: '16px'
+    },
+    cartButton: {
+        padding: '10px',
+        marginRight: '50px',
+        fontSize: '16px',
+        backgroundColor: 'blue',
+        color: 'white',
+        border: 'none',
+        borderRadius: '5px',
+        cursor: 'pointer',
+        width : '25%'
+    }
+};
+
+export default Menu;
+
+
+
+
+
+import React, { useState } from 'react';
+
+const Product = ({ product, updateCart }) => {
+    const [selectedCount, setSelectedCount] = useState(0);
+
+    const handleAddToCart = () => {
+        setSelectedCount(1);
+        updateCart(product.id, 'add');
+    };
+
+    const handleIncrement = () => {
+        setSelectedCount(selectedCount + 1);
+        updateCart(product.id, 'add');
+    };
+
+    const handleDecrement = () => {
+        if (selectedCount === 1) {
+            setSelectedCount(0);
+            updateCart(product.id, 'remove');
+        } else {
+            setSelectedCount(selectedCount - 1);
+            updateCart(product.id, 'remove');
+        }
+    };
+
+    return (
+        <div style={styles.productBox}>
+            <img src={product.image} alt={product.title} style={styles.image} />
+            <h3 style={styles.title}>{product.title}</h3>
+            <p style={styles.description}>{product.description}</p>
+            <p>Price: ${product.price}</p>
+
+            {selectedCount === 0 ? (
+                <button onClick={handleAddToCart} style={styles.cartButton}>Add to Cart</button>
+            ) : (
+                <div>
+                    <button style={styles.operatorButton} onClick={handleDecrement}>-</button>
+                    <span>{selectedCount}</span>
+                    <button style={styles.operatorButton} onClick={handleIncrement}>+</button>
+                </div>
+            )}
+        </div>
+    );
+};
+
+
+
+import React from 'react';
+
+
+const ProductCart = ({ product, quantity }) => {
+    const { image, title, price, description, rating } = product;
+    const totalPrice = price * quantity;
+
+    return (
+        <div style={styles.productCart}>
+            <img src={image} alt={title} style={styles.productCartImage} />
+            <div style={styles.productCartTitle}>{title}</div>
+            <div style={styles.productCartDescription}>{description}</div>
+            <div style={styles.productCartRating}>Rating: {rating.rate} <br /> ({rating.count} reviews)</div>
+            <div style={styles.productCartPrice}>${price}</div>
+            <div style={styles.productCartQuantity}>Quantity: {quantity} <br/> Total Price: {totalPrice}</div>
+        </div>
+    );
+};
+
+
+
+const Cart = ({  }) => {
+
+
+    const cartItems = JSON.parse(localStorage.getItem('cart')) || []
+
+    const totalAmount = cartItems.reduce((total, item) => total + item.product.price * item.quantity, 0);
+
+    return (
+        <div style={styles.cart}>
+            <h1 style={styles.cartHeader}>Your Cart</h1>
+            {!cartItems.length ? 
+            (<p style={styles.cartEmptyMessage}>Your cart is empty.</p>) : 
+            (
+                <>
+                    {cartItems.map((item, index) => (
+                        <ProductCart key={index} product={item.product} quantity={item.quantity} />
+                    ))}
+                    <div style={styles.cartTotal}><br/><br/>Total Amount: ${totalAmount} <br/><br/>
+                    <button style={styles.checkoutButton}> Checkout</button>
+                    </div>
+                </>
+            )}
+        </div>
+    );
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import React from 'react';
+import './App.css';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+
+
+import Homepage from './components/Homepage';
+import Cart from './components/Cart';
+
+
+function App() {
+
+  const routePaths = [
+    {
+      routePath: "/",
+      component: <Homepage/>
+    },
+    {
+      routePath: "/cart",
+      component: <Cart />
+    },
+
+  ]
+
+  return (
+    <Router>
+    <div className="App">
+      <div>
+        <h1>E Commerce Website</h1>
+        <Routes>
+         {routePaths.map((route, index) => (
+              <Route key={index} path={route.routePath} element={route.component} />
+            ))}
+        </Routes>
+      </div>
+    </div>
+  </Router>
+  );
+}
+
+export default App;
+
+
+
+
+
+
+
+
+import React, { useEffect, useState, useMemo } from 'react';
+import Product from './Product';
+import Menu from './Menu';
+
+const Homepage = () => {
+    const [products, setProducts] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [sortOption, setSortOption] = useState('');
+    const [cartReset, setCartReset] = useState(false);
+
+    const [cartItems, setCartItems] = useState(() => {
+        const savedCart = localStorage.getItem('cart');
+        return savedCart ? JSON.parse(savedCart) : [];
+    });
+
+    const resetCart = () => {
+        setCartItems([]);
+        localStorage.removeItem('cart');
+        setCartReset(true);
+    };
+
+    const sortByPriceAscending = (products) => products.sort((a, b) => a.price - b.price); 
+    const sortByPriceDescending = (products) => products.sort((a, b) => b.price - a.price);
+
+    const filteredProducts = useMemo(() => {
+        const filtered = products.filter(product =>
+            product.title.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+
+        if (sortOption === 'asc') {
+            return sortByPriceAscending(filtered);
+        } else if (sortOption === 'desc') {
+            return sortByPriceDescending(filtered);
+        } else {
+            return filtered;
+        }
+    }, [products, searchTerm, sortOption]);
+
+    const updateCart = (productId, action) => {
+        const existingItemIndex = cartItems.findIndex(item => item.productId === productId);
+        let updatedCartItems = [...cartItems];
+
+        if (existingItemIndex !== -1) {
+            const existingItem = updatedCartItems[existingItemIndex];
+
+            if (action === 'add') {
+                updatedCartItems[existingItemIndex].quantity++;
+            } else if (action === 'remove') {
+                if (existingItem.quantity > 1) {
+                    updatedCartItems[existingItemIndex].quantity--;
+                } else {
+                    updatedCartItems = updatedCartItems.filter(item => item.productId !== productId);
+                }
+            }
+        } else if (action === 'add') {
+            const productToAdd = products.find(product => product.id === productId);
+            updatedCartItems.push({ productId: productId, product: productToAdd, quantity: 1 });
+        }
+
+        setCartItems(updatedCartItems);
+        localStorage.setItem('cart', JSON.stringify(updatedCartItems));
+        setCartReset(false); // Reset the cartReset flag after updating the cart
+    };
+
+    useEffect(() => {
+        fetch('https://fakestoreapi.com/products/')
+            .then(res => res.json())
+            .then(json => {
+                console.log(json); 
+                setProducts(json); 
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+    }, []); 
+
+    return (
+        <div>
+            <Menu 
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                sortOption={sortOption}
+                setSortOption={setSortOption}
+                resetCart={resetCart}
+                cartItems={cartItems}    
+            />
+            <div style={styles.gridContainer}>
+                {filteredProducts.map(product => (
+                    <Product key={product.id} product={product} updateCart={updateCart} cartReset={cartReset} />
+                ))}
+            </div>
+        </div>
+    );
+};
+
+const styles = {
+    gridContainer: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(4, 1fr)',
+        gap: '16px',
+    },
+};
+
+export default Homepage;
+
+
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+const Menu = ({ searchTerm, setSearchTerm, sortOption, setSortOption, resetCart }) => {
+
+    const navigate = useNavigate();
+   
+    return (
+        <div style={styles.menuContainer}>
+            <input
+                type="text"
+                placeholder="Type here to search..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={styles.searchInput}
+            />
+            <select
+                value={sortOption}
+                onChange={(e) => setSortOption(e.target.value)}
+                style={styles.sortSelect}>
+
+                <option value="">Sort by Price</option>
+                <option value="asc">Ascending</option>
+                <option value="desc">Descending</option>
+            </select>
+
+            <button style={styles.cartButton} onClick={() =>navigate('/cart')}> Cart </button>
+            <button style={styles.resetButton} onClick={resetCart}> Reset Cart </button>
+        </div>
+    );
+};
+
+const styles = {
+    menuContainer: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: '10px',
+        borderBottom: '1px solid #ddd',
+        marginBottom: '20px'
+    },
+    searchInput: {
+        marginLeft: '50px',
+        padding: '10px',
+        fontSize: '16px',
+        width : '50%',
+        marginRight: '50px'
+    },
+    sortSelect: {
+        marginRight: '50px',
+        padding: '10px',
+        width : '25%',
+        fontSize: '16px'
+    },
+    cartButton: {
+        padding: '10px',
+        marginRight: '50px',
+        fontSize: '16px',
+        backgroundColor: 'blue',
+        color: 'white',
+        border: 'none',
+        borderRadius: '5px',
+        cursor: 'pointer',
+        width : '25%'
+    },
+    resetButton: {
+        padding: '10px',
+        marginRight: '50px',
+        fontSize: '16px',
+        backgroundColor: 'red',
+        color: 'white',
+        border: 'none',
+        borderRadius: '5px',
+        cursor: 'pointer',
+        width: '15%',
+    }
+};
+
+export default Menu;
+
+import React, { useState, useEffect } from 'react';
+
+const Product = ({ product, updateCart,cartReset  }) => {
+    const [selectedCount, setSelectedCount] = useState(0);
+
+    useEffect(() => {
+        const savedCart = localStorage.getItem('cart');
+        if (savedCart) {
+            const cartItems = JSON.parse(savedCart);
+            const cartItem = cartItems.find(item => item.productId === product.id);
+            if (cartItem) {
+                setSelectedCount(cartItem.quantity);
+            }
+        }
+    }, [product.id]);
+
+    const handleAddToCart = () => {
+        setSelectedCount(1);
+        updateCart(product.id, 'add');
+    };
+
+    const handleIncrement = () => {
+        setSelectedCount(selectedCount + 1);
+        updateCart(product.id, 'add');
+    };
+
+    const handleDecrement = () => {
+        if (selectedCount === 1) {
+            setSelectedCount(0);
+            updateCart(product.id, 'remove');
+        } else {
+            setSelectedCount(selectedCount - 1);
+            updateCart(product.id, 'remove');
+        }
+    };
+
+    useEffect(() => {
+        if (cartReset) {
+            setSelectedCount(0);
+        }
+    }, [cartReset]);
+
+    return (
+        <div style={styles.productBox}>
+            <img src={product.image} alt={product.title} style={styles.image} />
+            <h3 style={styles.title}>{product.title}</h3>
+            <p style={styles.description}>{product.description}</p>
+            <p>Price: ${product.price}</p>
+
+            {selectedCount === 0 ? (
+                <button onClick={handleAddToCart} style={styles.cartButton}>Add to Cart</button>
+            ) : (
+                <div>
+                    <button style={styles.operatorButton} onClick={handleDecrement}>-</button>
+                    <span>{selectedCount}</span>
+                    <button style={styles.operatorButton} onClick={handleIncrement}>+</button>
+                </div>
+            )}
+        </div>
+    );
+};
+
+const styles = {
+    productBox: {
+        position: 'relative', 
+        overflow: 'hidden', 
+        border: '1px solid #ddd',
+        borderRadius: '5px',
+        padding: '16px',
+        margin: '16px',
+        maxWidth: '300px',
+        textAlign: 'center',
+    },
+    image: {
+        width: '100%',
+        height: '200px', 
+        objectFit: 'contain', 
+        backgroundColor: '#fff', 
+    },
+    title : {
+        display: '-webkit-box',
+        WebkitBoxOrient: 'vertical',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        WebkitLineClamp: 3, 
+        height: '4.2em', 
+    },
+    description : {
+        display: '-webkit-box',
+        WebkitBoxOrient: 'vertical',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        WebkitLineClamp: 3, 
+        height: '4.2em', 
+    }, 
+    clickableArea: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        cursor: 'pointer',
+    },
+    cartButton: {
+        padding: '10px',
+        marginRight: '10px',
+        fontSize: '16px',
+        backgroundColor: 'blue',
+        color: 'white',
+        border: 'none',
+        borderRadius: '5px',
+        cursor: 'pointer',
+        width : '50%'
+    },
+    operatorButton: {
+        padding: '5px',
+        marginRight: '5px',
+        fontSize: '20px',
+        backgroundColor: 'blue',
+        color: 'white',
+        border: 'none',
+        borderRadius: '5px',
+        cursor: 'pointer',
+        width : '20%'
+    }
+};
+
+
+export default Product;
+
+
+
+import React from 'react';
+
+
+const ProductCart = ({ product, quantity }) => {
+    const { image, title, price, description, rating } = product;
+    const totalPrice = price * quantity;
+
+    return (
+        <div style={styles.productCart}>
+            <img src={image} alt={title} style={styles.productCartImage} />
+            <div style={styles.productCartTitle}>{title}</div>
+            <div style={styles.productCartDescription}>{description}</div>
+            <div style={styles.productCartRating}>Rating: {rating.rate} <br /> ({rating.count} reviews)</div>
+            <div style={styles.productCartPrice}>${price}</div>
+            <div style={styles.productCartQuantity}>Quantity: {quantity} <br/> Total Price: {totalPrice}</div>
+        </div>
+    );
+};
+
+
+
+const Cart = ({  }) => {
+
+
+    const cartItems = JSON.parse(localStorage.getItem('cart')) || []
+
+    const totalAmount = cartItems.reduce((total, item) => total + item.product.price * item.quantity, 0);
+
+    return (
+        <div style={styles.cart}>
+            <h1 style={styles.cartHeader}>Your Cart</h1>
+            {!cartItems.length ? 
+            (<p style={styles.cartEmptyMessage}>Your cart is empty.</p>) : 
+            (
+                <>
+                    {cartItems.map((item, index) => (
+                        <ProductCart key={index} product={item.product} quantity={item.quantity} />
+                    ))}
+                    <div style={styles.cartTotal}><br/><br/>Total Amount: ${totalAmount.toFixed(2)} <br/><br/>
+                    <button style={styles.checkoutButton}> Checkout</button>
+                    </div>
+                </>
+            )}
+        </div>
+    );
+};
+
+
+
+const styles = {
+    cart: {
+        padding: '20px',
+    },
+    cartHeader: {
+        fontSize: '2em',
+        marginBottom: '20px',
+    },
+    cartEmptyMessage: {
+        fontSize: '1.2em',
+    },
+    cartTotal: {
+        fontSize: '1.5em',
+        marginTop: '20px',
+        fontWeight: 'bold',
+        borderTop: '2px solid #ddd',
+        paddingTop: '10px',
+    },
+    productCart: {
+        display: 'grid',
+        gridTemplateColumns: '100px 1fr 2fr 1fr 1fr 1fr',
+        alignItems: 'center',
+        marginBottom: '20px',
+        border: '1px solid #ddd',
+        padding: '10px',
+        borderRadius: '5px',
+        gap: '10px',
+    },
+    productCartImage: {
+        width: '100%',
+    },
+    productCartTitle: {
+        fontSize: '1.2em',
+        marginBottom: '10px',
+    },
+    productCartDescription: {
+        marginBottom: '10px',
+    },
+    productCartRating: {
+        marginBottom: '10px',
+    },
+    productCartPrice: {
+        marginBottom: '10px',
+    },
+    productCartQuantity: {
+        marginBottom: '10px',
+    },
+    checkoutButton: {
+        padding: '10px 10px',
+        fontSize: '0.7em',
+        backgroundColor: '#007bff',
+        color: '#fff',
+        borderRadius: '4px',
+        border: 'none',
+        cursor: 'pointer',
+    },
+    productCartTotal: {
+        marginBottom: '10px',
+    }
+};
+
+export default Cart;
+
+
+

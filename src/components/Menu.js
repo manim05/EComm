@@ -1,23 +1,9 @@
-import React, { useState } from 'react';
-
-// import ModalCart from './ModalCart';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const Menu = ({ searchTerm, setSearchTerm, sortOption, setSortOption }) => {
+const Menu = ({ searchTerm, setSearchTerm, sortOption, setSortOption, resetCart }) => {
 
     const navigate = useNavigate();
-
-
-    // const [isModalOpen, setIsModalOpen] = useState(false);
-
-    // const openModal = () => {
-    //     setIsModalOpen(true);
-    // };
-
-    // const closeModal = () => {
-    //     setIsModalOpen(false);
-    // };
-
    
     return (
         <div style={styles.menuContainer}>
@@ -39,6 +25,7 @@ const Menu = ({ searchTerm, setSearchTerm, sortOption, setSortOption }) => {
             </select>
 
             <button style={styles.cartButton} onClick={() =>navigate('/cart')}> Cart </button>
+            <button style={styles.resetButton} onClick={resetCart}> Reset Cart </button>
         </div>
     );
 };
@@ -75,6 +62,17 @@ const styles = {
         borderRadius: '5px',
         cursor: 'pointer',
         width : '25%'
+    },
+    resetButton: {
+        padding: '10px',
+        marginRight: '50px',
+        fontSize: '16px',
+        backgroundColor: 'red',
+        color: 'white',
+        border: 'none',
+        borderRadius: '5px',
+        cursor: 'pointer',
+        width: '15%',
     }
 };
 
