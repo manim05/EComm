@@ -1,0 +1,293 @@
+import React from 'react';
+import './App.css';
+import Homepage from './Homepage';
+function App() {
+  return (
+    <div className="App">
+      <div>
+        <h1>E Commerce Website</h1>
+        <Homepage />
+      </div>
+    </div>
+  );
+}
+
+export default App;
+
+import React, { useEffect, useState } from 'react';
+import Product from './Product';
+import Menu from './Menu';
+
+const Homepage = () => {
+    const [products, setProducts] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [sortOption, setSortOption] = useState('');
+    const [filteredProducts, setFilteredProducts] = useState([]);
+
+    useEffect(() => {
+        const filtered = [];
+
+        for (let i = 0; i < products.length; i++) {
+            const product = products[i];
+            if (product.title.toLowerCase().includes(searchTerm.toLowerCase())) {
+                filtered.push(product);
+            }
+        }
+
+        let sorted = [...filtered];
+
+        if (sortOption === 'asc') {
+            sorted = sortByPriceAscending(filtered);
+        } else if (sortOption === 'desc') {
+            sorted = sortByPriceDescending(filtered);
+        }
+        setFilteredProducts(sorted);
+    }, [products, searchTerm, sortOption]);
+
+    
+
+
+    // const filtered = products.filter(product =>
+    //     product.title.toLowerCase().includes(searchTerm.toLowerCase())
+    // );
+
+    const sortByPriceAscending = (products) => {
+        return products.sort((a, b) => a.price - b.price);
+    };
+        
+    const sortByPriceDescending = (products) => {
+        return products.sort((a, b) => b.price - a.price);
+    };
+
+  
+    useEffect(() => {
+        fetch('https://fakestoreapi.com/products/')
+            .then(res => res.json())
+            .then(json => {
+                console.log(json); 
+                setProducts(json); 
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+    }, []); 
+
+    return (
+        <div>
+
+            <Menu 
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                sortOption={sortOption}
+                setSortOption={setSortOption}
+            />
+            <div style={styles.gridContainer}>
+                {filteredProducts.map(product => (
+                    <Product key={product.id} product={product} />
+                ))}
+            </div>
+        </div>
+    );
+};
+
+const styles = {
+    gridContainer: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(4, 1fr)',
+        gap: '16px',
+    },
+};
+
+export default Homepage;
+
+
+import React from 'react';
+
+const Menu = ({ searchTerm, setSearchTerm, sortOption, setSortOption }) => {
+    return (
+        <div style={styles.menuContainer}>
+            <input
+                type="text"
+                placeholder="Type here to search..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={styles.searchInput}
+            />
+            <select
+                value={sortOption}
+                onChange={(e) => setSortOption(e.target.value)}
+                style={styles.sortSelect}>
+
+                <option value="">Sort by Price</option>
+                <option value="asc">Ascending</option>
+                <option value="desc">Descending</option>
+            </select>
+
+            <button style={styles.cartButton}> Cart </button>
+        </div>
+    );
+};
+
+const styles = {
+    menuContainer: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: '10px',
+        borderBottom: '1px solid #ddd',
+        marginBottom: '20px'
+    },
+    searchInput: {
+        marginLeft: '50px',
+        padding: '10px',
+        fontSize: '16px',
+        width : '50%',
+        marginRight: '50px'
+    },
+    sortSelect: {
+        marginRight: '50px',
+        padding: '10px',
+        width : '25%',
+        fontSize: '16px'
+    },
+    cartButton: {
+        padding: '10px',
+        marginRight: '50px',
+        fontSize: '16px',
+        backgroundColor: 'blue',
+        color: 'white',
+        border: 'none',
+        borderRadius: '5px',
+        cursor: 'pointer',
+        width : '25%'
+    }
+};
+
+export default Menu;
+
+
+import React, { useState } from 'react';
+
+
+const Product = ({ product }) => {
+
+
+    const [selectedCount, setSelectedCount] = useState(0);
+
+
+   
+
+    const handleAddToCart = () => {
+        setSelectedCount(1);
+    };
+
+    const handleIncrement = () => {
+        setSelectedCount(selectedCount + 1);
+    };
+
+    const handleDecrement = () => {
+        if (selectedCount === 1) {
+            setSelectedCount(0);
+        } else {
+            setSelectedCount(selectedCount - 1);
+        }
+    };
+
+    return (
+        <div style={styles.productBox}>
+            <div>
+
+            
+            <img src={product.image} alt={product.title} style={styles.image} />
+            <h3 style={styles.title}>{product.title}</h3>
+            <p style={styles.description}>{product.description}</p>
+            <p>Price: ${product.price}</p>
+
+            {selectedCount === 0 ? (
+                <button onClick={handleAddToCart} style={styles.cartButton}>Add to Cart</button>
+            ) : (
+                <div>
+                    <button style={styles.operatorButton} onClick={handleDecrement}>-</button>
+                    <span>{selectedCount}</span> <span></span>
+                    <button style={styles.operatorButton} onClick={handleIncrement}>+</button>
+                </div>
+            )}
+            </div>
+
+         
+        </div>
+    );
+};
+
+
+
+const styles = {
+    productBox: {
+        position: 'relative', 
+        overflow: 'hidden', 
+        border: '1px solid #ddd',
+        borderRadius: '5px',
+        padding: '16px',
+        margin: '16px',
+        maxWidth: '300px',
+        textAlign: 'center',
+    },
+    image: {
+        width: '100%',
+        height: '200px', 
+        objectFit: 'contain', 
+        backgroundColor: '#fff', 
+    },
+    title : {
+        display: '-webkit-box',
+        WebkitBoxOrient: 'vertical',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        WebkitLineClamp: 3, 
+        height: '4.2em', 
+    },
+    description : {
+        display: '-webkit-box',
+        WebkitBoxOrient: 'vertical',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        WebkitLineClamp: 3, 
+        height: '4.2em', 
+    }, 
+    clickableArea: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        cursor: 'pointer',
+    },
+    cartButton: {
+        padding: '10px',
+        marginRight: '10px',
+        fontSize: '16px',
+        backgroundColor: 'blue',
+        color: 'white',
+        border: 'none',
+        borderRadius: '5px',
+        cursor: 'pointer',
+        width : '50%'
+    },
+    operatorButton: {
+        padding: '5px',
+        marginRight: '5px',
+        fontSize: '20px',
+        backgroundColor: 'blue',
+        color: 'white',
+        border: 'none',
+        borderRadius: '5px',
+        cursor: 'pointer',
+        width : '20%'
+    }
+};
+
+export default Product;
+
+
+
+
