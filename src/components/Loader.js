@@ -19,7 +19,8 @@ const styles = {
     height: '100vh',
   },
   loadingStyles : {
-    color: 'black'
+    color: 'black',
+    height: 'auto'
   }
 };
 
