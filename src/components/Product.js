@@ -44,14 +44,16 @@ const Product = ({ product, updateCart,cartReset  }) => {
             <p style={styles.description}>{product.description}</p>
             <p>Price: ${product.price}</p>
 
-            {!selectedCount  ? (
-                <button onClick={handleAddToCart} style={styles.cartButton}>Add to Cart</button>
-            ) : (
+
+            {!!selectedCount  ? (
                 <div>
-                    <button style={styles.operatorButton} onClick={handleDecrement}>-</button>
-                    <span>{selectedCount}</span>
-                    <button style={styles.operatorButton} onClick={handleIncrement}>+</button>
-                </div>
+                <button style={styles.operatorButton} onClick={handleDecrement}>-</button>
+                <span>{selectedCount}</span>
+                <button style={styles.operatorButton} onClick={handleIncrement}>+</button>
+            </div>
+            ) : (
+
+            <button onClick={handleAddToCart} style={styles.cartButton}>Add to Cart</button>
             )}
         </div>
     );
