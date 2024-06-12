@@ -33,8 +33,8 @@ const styles = {
     },
     modalContent: {
         backgroundColor: '#fff',
-        width: '50%', // Decreased width
-        padding: '10px', // Decreased padding
+        width: '50%', 
+        padding: '10px', 
         borderRadius: '8px',
         position: 'relative',
     },

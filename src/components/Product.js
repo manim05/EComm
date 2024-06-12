@@ -44,7 +44,7 @@ const Product = ({ product, updateCart,cartReset  }) => {
             <p style={styles.description}>{product.description}</p>
             <p>Price: ${product.price}</p>
 
-            {selectedCount === 0 ? (
+            {!selectedCount  ? (
                 <button onClick={handleAddToCart} style={styles.cartButton}>Add to Cart</button>
             ) : (
                 <div>

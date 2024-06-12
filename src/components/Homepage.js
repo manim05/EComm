@@ -3,6 +3,7 @@ import Product from './Product';
 import Menu from './Menu';
 import { sortByPriceAscending,sortByPriceDescending,filterProducts } from '../utils/sortFilter';
 import { updateCart } from '../utils/cartUtils';
+import Loader from './Loader';
 
 
 const Homepage = () => {
@@ -21,9 +22,6 @@ const Homepage = () => {
         localStorage.removeItem('cart');
         setCartReset(true);
     };
-
-
-
 
     const filteredProducts = useMemo(() => {
         const filtered = filterProducts(products, searchTerm);
@@ -44,7 +42,7 @@ const Homepage = () => {
         fetch('https://fakestoreapi.com/products/')
             .then(res => res.json())
             .then(json => {
-                console.log(json); 
+                // console.log(json); 
                 setProducts(json); 
             })
             .catch(error => {
@@ -62,11 +60,19 @@ const Homepage = () => {
                 resetCart={resetCart}
                 cartItems={cartItems}    
             />
-            <div style={styles.gridContainer}>
+
+
+            { !filteredProducts.length ? (<Loader />) : 
+            
+            (<div style={styles.gridContainer}>
                 {filteredProducts.map(product => (
                     <Product key={product.id} product={product} updateCart={handleUpdateCart} cartReset={cartReset} />
                 ))}
-            </div>
+            </div>)
+
+
+            }
+            
         </div>
     );
 };

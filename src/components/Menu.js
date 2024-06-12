@@ -19,7 +19,7 @@ const Menu = ({ searchTerm, setSearchTerm, sortOption, setSortOption, resetCart 
                 onChange={(e) => setSortOption(e.target.value)}
                 style={styles.sortSelect}>
 
-                <option value="">Sort by Price</option>
+                <option value="">Default Order</option>
                 <option value="asc">Ascending</option>
                 <option value="desc">Descending</option>
             </select>

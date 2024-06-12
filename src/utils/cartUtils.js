@@ -1,4 +1,4 @@
-export const updateCart = (cartItems, productId, action, products) => {
+const updateCart = (cartItems, productId, action, products) => {
     const existingItemIndex = cartItems.findIndex(
       (item) => item.productId === productId
     );
@@ -30,4 +30,7 @@ export const updateCart = (cartItems, productId, action, products) => {
     return updatedCartItems;
   };
 
-export const calculateTotalAmount = (cartItems) => cartItems.reduce((total, item) => total + item.product.price * item.quantity,0);
+const calculateTotalAmount = (cartItems) => cartItems.reduce((total, item) => total + item.product.price * item.quantity,0);
+
+
+export {updateCart,calculateTotalAmount};
