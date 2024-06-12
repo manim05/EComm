@@ -13,7 +13,7 @@ const ProductCart = ({ product, quantity }) => {
             <div style={styles.productCartDescription}>{description}</div>
             <div style={styles.productCartRating}>Rating: {rating.rate} <br /> ({rating.count} reviews)</div>
             <div style={styles.productCartPrice}>${price}</div>
-            <div style={styles.productCartQuantity}> Quantity: {quantity} <br/> Total Price: {totalPrice}</div>
+            <div style={styles.productCartQuantity}> Quantity: {quantity} <br/> Total Price: $ {totalPrice}</div>
         </div>
     );
 };
