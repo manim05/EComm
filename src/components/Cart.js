@@ -21,7 +21,7 @@ const ProductCart = ({ product, quantity }) => {
 
 
 const Cart = () => {
-
+    const neww = 5;
 
     const cartItems = JSON.parse(localStorage.getItem('cart')) || []
 
