@@ -1,10 +1,9 @@
 import React from 'react';
 import './App.css';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-
-
 import Homepage from './components/Homepage';
 import Cart from './components/Cart';
+
 
 
 function App() {
@@ -17,7 +16,7 @@ function App() {
     {
       routePath: "/cart",
       component: <Cart />
-    },
+    }
 
   ]
 
